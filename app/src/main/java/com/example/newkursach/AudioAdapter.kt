@@ -1,5 +1,6 @@
 package com.example.newkursach
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,12 +15,17 @@ import com.example.newkursach.secondary.OnItemClickListener
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class AudioAdapter(var records: ArrayList<AudioRecord>, var listener: OnItemClickListener) :
+class AudioAdapter(var listener: OnItemClickListener) :
     RecyclerView.Adapter<AudioAdapter.CardViewHolder>() {
     private var editMode = false
     fun isEditMode(): Boolean {
         return editMode
     }
+    var recordsList: List<AudioRecord> = emptyList()
+        @SuppressLint("NotifyDataSetChanged") set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     fun setEditMode(mode: Boolean) {
         if (editMode != mode) {
@@ -62,12 +68,16 @@ class AudioAdapter(var records: ArrayList<AudioRecord>, var listener: OnItemClic
     }
 
     override fun getItemCount(): Int {
-        return records.size
+        return recordsList.size
+    }
+    fun setRecords(recordList: List<AudioRecord>) {
+        this.recordsList = recordList
+        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
         if (position != RecyclerView.NO_POSITION) {
-            val record = records[position]
+            val record = recordsList[position]
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
             val date = Date(record.timestamp)
             val strDate = dateFormat.format(date)

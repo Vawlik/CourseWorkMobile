@@ -3,9 +3,7 @@ package com.example.newkursach.secondary
 import android.os.Looper
 
 class TimerRecord(listener: OnTimeListener) {
-    interface OnTimeListener {
-        fun onTime(duration: String)
-    }
+
 
     private var handler = android.os.Handler(Looper.getMainLooper())
     private lateinit var runnable: Runnable
@@ -44,4 +42,7 @@ class TimerRecord(listener: OnTimeListener) {
             "%02d:%02d:%02d".format(min, sec, milsec / 10)
         return formatted
     }
+}
+interface OnTimeListener {
+    fun onTime(duration: String)
 }

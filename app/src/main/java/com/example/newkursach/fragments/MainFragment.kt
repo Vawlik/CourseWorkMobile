@@ -1,20 +1,29 @@
-package com.example.newkursach
+package com.example.newkursach.fragments
 
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.room.Room
-import com.example.newkursach.secondary.TimerRecord
+import androidx.navigation.fragment.findNavController
+import com.example.newkursach.CardAudioActivity
+import com.example.newkursach.R
+import com.example.newkursach.REQUEST_CODE
 import com.example.newkursach.data.AppDatabase
 import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.ActivityMainBinding
+import com.example.newkursach.databinding.FragmentCardAudioBinding
+import com.example.newkursach.databinding.FragmentMainBinding
+import com.example.newkursach.secondary.OnTimeListener
+import com.example.newkursach.secondary.TimerRecord
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -24,12 +33,11 @@ import java.io.ObjectOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 
-const val REQUEST_CODE = 200
-const val LOCATION_PERMISSION_REQUEST_CODE = 201
 
-class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var wave: ArrayList<Float>
+class MainFragment : Fragment(), OnTimeListener {
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var wave: List<Float>
     private var perm = arrayOf(android.Manifest.permission.RECORD_AUDIO)
     private var permGrand = false
     private lateinit var recorder: MediaRecorder
@@ -40,15 +48,17 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
     private var duration = ""
     private lateinit var timerRecord: TimerRecord
 
-    private val audioDAO = AppDatabase.getInstance(this).audioRecordDao()
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private val audioDAO = AppDatabase.getInstance(requireContext()).audioRecordDao()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        _binding = FragmentMainBinding.inflate(layoutInflater, container, false)
 
         permGrand =
-            ActivityCompat.checkSelfPermission(this, perm[0]) == PackageManager.PERMISSION_GRANTED
-        if (!permGrand) ActivityCompat.requestPermissions(this, perm, REQUEST_CODE)
+            ActivityCompat.checkSelfPermission(requireContext(), perm[0]) == PackageManager.PERMISSION_GRANTED
+        if (!permGrand) ActivityCompat.requestPermissions(requireActivity(), perm, REQUEST_CODE)
 
         timerRecord = TimerRecord(this)
 
@@ -60,23 +70,30 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
             }
         }
         binding.menu.setOnClickListener {
-            Toast.makeText(this, "Сохраненные записи", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, CardAudioActivity::class.java))
+            Toast.makeText(requireContext(), "Сохраненные записи", Toast.LENGTH_SHORT).show()
+            requireActivity().onBackPressedDispatcher.addCallback(
+                viewLifecycleOwner,
+                object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        val action = MainFragmentDirections.actionMainFragmentToCardAudioFragment()
+                        findNavController().navigate(action)
+                    }
+                })
         }
         binding.donebut.setOnClickListener {
             stopRec()
             showSaveDialog()
-            Toast.makeText(this, "Запись сохранена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Запись сохранена", Toast.LENGTH_SHORT).show()
         }
 
         binding.close.setOnClickListener {
             stopRec()
             File("$dirPath$filename.mp3").delete()
-            Toast.makeText(this, "Запись удалена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show()
         }
         binding.close.isClickable = false
+        return binding.root
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -102,11 +119,11 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
 
     private fun startRec() {
         if (!permGrand) {
-            ActivityCompat.requestPermissions(this, perm, REQUEST_CODE)
+            ActivityCompat.requestPermissions(requireActivity(), perm, REQUEST_CODE)
             return
         }
         recorder = MediaRecorder()
-        dirPath = "${externalCacheDir?.absolutePath}/"
+        dirPath = "${requireActivity().externalCacheDir?.absolutePath}/"
         val simpleDateFormat = SimpleDateFormat("yyyy.MM.DD_hh.mm.ss")
         val date: String = simpleDateFormat.format(Date())
         filename = "audio_record_$date"
@@ -152,14 +169,13 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
         binding.timerMain.text = duration
         this.duration = duration.dropLast(3)
         binding.waveSpeak.addWave(recorder.maxAmplitude.toFloat())
-
     }
 
     private fun showSaveDialog() {
-        val alertDialogBuilder = AlertDialog.Builder(this)
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
         alertDialogBuilder.setTitle("Сохранить запись?")
 
-        val input = EditText(this)
+        val input = EditText(requireContext())
         input.hint = "Введите название файла"
         input.setText(filename)
 
@@ -170,7 +186,7 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
                 val newFile = File("$dirPath$fileName.mp3")
                 File("$dirPath$filename.mp3").renameTo(newFile)
             }
-            Toast.makeText(this, "Запись сохранена как $fileName", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Запись сохранена как $fileName", Toast.LENGTH_SHORT).show()
             val filePath = "$dirPath$fileName.mp3"
             val timestamp = Date().time
             val wavesPath = "$dirPath$fileName"
@@ -192,8 +208,9 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
 
         alertDialogBuilder.setNegativeButton("Удалить") { _, _ ->
             File("$dirPath$filename.mp3").delete()
-            Toast.makeText(this, "Запись удалена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show()
         }
         alertDialogBuilder.show()
     }
+
 }

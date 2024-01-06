@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navgraph"
+    app:startDestination="@id/audioPlayerFragment">
+    <fragment
+        android:id="@+id/audioPlayerFragment"
+        android:name="com.example.newkursach.fragments.AudioPlayerFragment"
+        android:label="fragment_audio_player"
+        tools:layout="@layout/fragment_audio_player" >
+        <argument
+            android:name="filename"
+            app:argType="string" />
+        <argument
+            android:name="filepath"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_audioPlayerFragment_to_cardAudioFragment"
+            app:destination="@id/cardAudioFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/cardAudioFragment"
+        android:name="com.example.newkursach.fragments.CardAudioFragment"
+        android:label="fragment_card_audio"
+        tools:layout="@layout/fragment_card_audio" >
+        <action
+            android:id="@+id/action_cardAudioFragment_to_audioPlayerFragment"
+            app:destination="@id/audioPlayerFragment" />
+        <action
+            android:id="@+id/action_cardAudioFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.newkursach.fragments.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_cardAudioFragment"
+            app:destination="@id/cardAudioFragment" />
+    </fragment>
+</navigation>

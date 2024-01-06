@@ -1,5 +1,6 @@
 package com.example.newkursach.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,7 +11,7 @@ import com.example.newkursach.data.AudioRecord
 @Dao
 interface AudioRecordDao {
     @Query("SELECT*FROM audioRecords")
-    fun getAll(): List<AudioRecord>
+    fun getAll(): LiveData<List<AudioRecord>>
 
     @Insert
     fun insert(vararg audioRecord: AudioRecord)
@@ -19,11 +20,12 @@ interface AudioRecordDao {
     fun delete(audioRecord: AudioRecord)
 
     @Delete
-    fun delete(audioRecords: Array<AudioRecord>)
+    fun delete(audioRecords: List<AudioRecord>)
 
     @Update
     fun update(audioRecord: AudioRecord)
 
     @Query("DELETE FROM audioRecords")
     suspend fun deleteAll()
+
 }

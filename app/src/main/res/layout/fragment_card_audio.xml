@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CardAudioActivity">
+    tools:context=".fragments.CardAudioFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -87,24 +87,24 @@
                 android:layout_height="wrap_content"
                 android:text="Удалить"/>
         </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center">
-        <ImageButton
-            android:id="@+id/editbut"
-            android:clickable="false"
-            android:textColor="@color/grayRipple"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/edit"/>
-        <TextView
-            android:id="@+id/textedit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Изменить"/>
-    </LinearLayout>
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageButton
+                android:id="@+id/editbut"
+                android:clickable="false"
+                android:textColor="@color/grayRipple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edit"/>
+            <TextView
+                android:id="@+id/textedit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Изменить"/>
+        </LinearLayout>
 
     </LinearLayout>
 
