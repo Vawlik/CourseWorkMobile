@@ -27,8 +27,10 @@ class CardAudioViewModel(private val audioDAO: AudioRecordDao) : ViewModel() {
         }
     }
     fun setIsChecked(allIsChecked: Boolean){
-        for (audioRecord in records.value!!) {
-            audioRecord.isChecked=allIsChecked
+        viewModelScope.launch(Dispatchers.IO) {
+            for (audioRecord in records.value!!) {
+                audioRecord.isChecked = allIsChecked
+            }
         }
     }
 

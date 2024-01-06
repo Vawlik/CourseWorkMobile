@@ -2,6 +2,7 @@ package com.example.newkursach.fragments
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,12 +19,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.newkursach.AudioAdapter
 import com.example.newkursach.R
-import com.example.newkursach.data.AppDatabase
 import com.example.newkursach.databinding.FragmentCardAudioBinding
 import com.example.newkursach.secondary.OnItemClickListener
 import com.example.newkursach.viewmodel.CardAudioViewModel
@@ -35,20 +34,15 @@ class CardAudioFragment : Fragment() {
     private var _binding: FragmentCardAudioBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapterAudioRecords: AudioAdapter
-    private val audioDAO = AppDatabase.getInstance(requireContext()).audioRecordDao()
     private var allIsChecked = false
 
     private lateinit var toolbar: MaterialToolbar
 
-    private val args by navArgs<AudioPlayerFragmentArgs>()
-    private val fileName by lazy { args.filename }
-    private val filePath by lazy { args.filename }
     private val viewModel: CardAudioViewModel by viewModels { CardAudioViewModel.Factory() }
 
     private lateinit var editBar: View
     private lateinit var butClose: ImageButton
     private lateinit var butSelectAll: ImageButton
-    val grayColor = ContextCompat.getColor(requireContext(), R.color.grayRipple)
     private lateinit var bottomSheet: LinearLayout
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
 
@@ -59,7 +53,7 @@ class CardAudioFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreate(savedInstanceState)
         _binding = FragmentCardAudioBinding.inflate(layoutInflater, container, false)
 
@@ -69,16 +63,18 @@ class CardAudioFragment : Fragment() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setDisplayShowHomeEnabled(true)
         toolbar.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-                object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        val action =
-                            CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
-                        findNavController().navigate(action)
-                    }
-                })
+            val action =
+                CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
+            findNavController().navigate(action)
         }
-
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val action =
+                        CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
+                    findNavController().navigate(action)
+                }
+            })
         editBut = binding.editbut
         deleteBut = binding.deletebut
         deleteText = binding.textdelete
@@ -158,14 +154,16 @@ class CardAudioFragment : Fragment() {
     }
 
 
-    private fun switchDeleteMode(isClickable:Boolean){
+    private fun switchDeleteMode(isClickable: Boolean) {
         deleteText.isClickable = isClickable
+        val grayColor = ContextCompat.getColor(requireContext(), R.color.grayRipple)
         deleteText.setTextColor(grayColor)
         deleteText.backgroundTintList = ColorStateList.valueOf(grayColor)
     }
 
-    private fun switchEditMode(isClickable:Boolean){
+    private fun switchEditMode(isClickable: Boolean) {
         editText.isClickable = isClickable
+        val grayColor = ContextCompat.getColor(requireContext(), R.color.grayRipple)
         editText.setTextColor(grayColor)
         editText.backgroundTintList = ColorStateList.valueOf(grayColor)
     }
@@ -204,13 +202,19 @@ class CardAudioFragment : Fragment() {
 
     private val listener = object : OnItemClickListener {
         override fun onShareClickListener(position: Int) {
-            viewModel.records.observe(viewLifecycleOwner) {
-                val record = it[position]
+            viewModel.records.observe(viewLifecycleOwner) { records ->
+                val record = records[position]
+
+                // Создайте Uri из строки пути к файлу
+                val fileUri = Uri.parse(record.filepath)
+
                 val shareIntent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, "Поделиться файлом: ${record.filename}")
-                    type = "text/plain"
+                    putExtra(Intent.EXTRA_STREAM, fileUri)
+                    putExtra(Intent.EXTRA_TITLE, "Поделиться аудиофайлом")
+                    type = "audio/wav"
                 }
+
                 startActivity(Intent.createChooser(shareIntent, "Поделиться через"))
             }
         }
@@ -259,16 +263,11 @@ class CardAudioFragment : Fragment() {
                         }
                     }
                 } else {
-                    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-                        object : OnBackPressedCallback(true) {
-                            override fun handleOnBackPressed() {
-                                val action =
-                                    CardAudioFragmentDirections.actionCardAudioFragmentToAudioPlayerFragment(
-                                        fileName, filePath
-                                    )
-                                findNavController().navigate(action)
-                            }
-                        })
+                    val action =
+                        CardAudioFragmentDirections.actionCardAudioFragmentToAudioPlayerFragment(
+                            audioRecord.filename, audioRecord.filepath
+                        )
+                    findNavController().navigate(action)
                 }
             }
         }

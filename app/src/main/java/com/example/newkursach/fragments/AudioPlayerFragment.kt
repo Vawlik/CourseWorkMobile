@@ -5,20 +5,21 @@ import android.media.PlaybackParams
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.newkursach.R
 import com.example.newkursach.databinding.FragmentAudioPlayerBinding
+import com.example.newkursach.viewmodel.AudioPlayerViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 
@@ -35,7 +36,13 @@ class AudioPlayerFragment : Fragment() {
 
     private val args by navArgs<AudioPlayerFragmentArgs>()
     private val fileName by lazy { args.filename }
-    private val filePath by lazy { args.filename }
+    private val filePath by lazy { args.filepath }
+    private val viewModel: AudioPlayerViewModel by viewModels {
+        AudioPlayerViewModel.Factory(
+            fileName,
+            filePath
+        )
+    }
 
 
     private lateinit var forwardbut: ImageButton
@@ -65,14 +72,9 @@ class AudioPlayerFragment : Fragment() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setDisplayShowHomeEnabled(true)
         toolbar.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.addCallback(
-                viewLifecycleOwner,
-                object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        val action = AudioPlayerFragmentDirections.actionAudioPlayerFragmentToCardAudioFragment()
-                        findNavController().navigate(action)
-                    }
-                })
+            val action =
+                AudioPlayerFragmentDirections.actionAudioPlayerFragmentToCardAudioFragment()
+            findNavController().navigate(action)
         }
 
         binding.filenameBar.text = fileName
@@ -105,7 +107,8 @@ class AudioPlayerFragment : Fragment() {
         playPause()
         seekBar.max = mediaPlayer.duration
         mediaPlayer.setOnCompletionListener {
-            playbut.background = ResourcesCompat.getDrawable(resources, R.drawable.playaudio, requireContext().theme)
+            playbut.background =
+                ResourcesCompat.getDrawable(resources, R.drawable.playaudio, requireContext().theme)
             handler.removeCallbacks(runnable)
         }
         forwardbut.setOnClickListener {
@@ -139,15 +142,21 @@ class AudioPlayerFragment : Fragment() {
         })
         return binding.root
     }
+
     private fun playPause() {
         if (!mediaPlayer.isPlaying) {
             mediaPlayer.start()
             playbut.background =
-                ResourcesCompat.getDrawable(resources, R.drawable.pauseaudio, requireContext().theme)
+                ResourcesCompat.getDrawable(
+                    resources,
+                    R.drawable.pauseaudio,
+                    requireContext().theme
+                )
             handler.postDelayed(runnable, delay)
         } else {
             mediaPlayer.pause()
-            playbut.background = ResourcesCompat.getDrawable(resources, R.drawable.playaudio, requireContext().theme)
+            playbut.background =
+                ResourcesCompat.getDrawable(resources, R.drawable.playaudio, requireContext().theme)
             handler.removeCallbacks(runnable)
         }
     }
@@ -160,6 +169,7 @@ class AudioPlayerFragment : Fragment() {
         val hour = dur / 3600
         return String.format("%02d:%02d:%02d", hour, min, sec)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

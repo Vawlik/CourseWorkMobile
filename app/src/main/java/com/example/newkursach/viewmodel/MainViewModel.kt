@@ -4,20 +4,24 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.newkursach.data.AppDatabase
 import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.data.AudioRecordDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class MainViewModel(private val dao: AudioRecordDao) : ViewModel() {
-    private val _record = MediatorLiveData<AudioRecord>()
-    val record: LiveData<AudioRecord> = _record
+class MainViewModel(private val audioDAO: AudioRecordDao) : ViewModel() {
+//    private val _record = MediatorLiveData<AudioRecord>()
+//      val record: LiveData<AudioRecord> = _record
 
-    init {
-        _record.value = AudioRecord(null, "", "", "", "", "")
+
+    fun insertAudio(record: AudioRecord){
+        viewModelScope.launch(Dispatchers.IO) {
+            audioDAO.insert(record)
+        }
     }
-
-
 
 
     companion object {

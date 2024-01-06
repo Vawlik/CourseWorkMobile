@@ -1,31 +1,24 @@
 package com.example.newkursach.fragments
 
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.newkursach.CardAudioActivity
 import com.example.newkursach.R
-import com.example.newkursach.REQUEST_CODE
-import com.example.newkursach.data.AppDatabase
 import com.example.newkursach.data.AudioRecord
-import com.example.newkursach.databinding.ActivityMainBinding
-import com.example.newkursach.databinding.FragmentCardAudioBinding
 import com.example.newkursach.databinding.FragmentMainBinding
 import com.example.newkursach.secondary.OnTimeListener
 import com.example.newkursach.secondary.TimerRecord
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.newkursach.viewmodel.MainViewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -33,6 +26,7 @@ import java.io.ObjectOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 
+const val REQUEST_CODE = 200
 
 class MainFragment : Fragment(), OnTimeListener {
     private var _binding: FragmentMainBinding? = null
@@ -48,16 +42,20 @@ class MainFragment : Fragment(), OnTimeListener {
     private var duration = ""
     private lateinit var timerRecord: TimerRecord
 
-    private val audioDAO = AppDatabase.getInstance(requireContext()).audioRecordDao()
+    private val viewModel: MainViewModel by viewModels { MainViewModel.Factory() }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreate(savedInstanceState)
         _binding = FragmentMainBinding.inflate(layoutInflater, container, false)
 
         permGrand =
-            ActivityCompat.checkSelfPermission(requireContext(), perm[0]) == PackageManager.PERMISSION_GRANTED
+            ActivityCompat.checkSelfPermission(
+                requireContext(),
+                perm[0]
+            ) == PackageManager.PERMISSION_GRANTED
         if (!permGrand) ActivityCompat.requestPermissions(requireActivity(), perm, REQUEST_CODE)
 
         timerRecord = TimerRecord(this)
@@ -71,14 +69,8 @@ class MainFragment : Fragment(), OnTimeListener {
         }
         binding.menu.setOnClickListener {
             Toast.makeText(requireContext(), "Сохраненные записи", Toast.LENGTH_SHORT).show()
-            requireActivity().onBackPressedDispatcher.addCallback(
-                viewLifecycleOwner,
-                object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        val action = MainFragmentDirections.actionMainFragmentToCardAudioFragment()
-                        findNavController().navigate(action)
-                    }
-                })
+            val action = MainFragmentDirections.actionMainFragmentToCardAudioFragment()
+            findNavController().navigate(action)
         }
         binding.donebut.setOnClickListener {
             stopRec()
@@ -186,7 +178,8 @@ class MainFragment : Fragment(), OnTimeListener {
                 val newFile = File("$dirPath$fileName.mp3")
                 File("$dirPath$filename.mp3").renameTo(newFile)
             }
-            Toast.makeText(requireContext(), "Запись сохранена как $fileName", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Запись сохранена как $fileName", Toast.LENGTH_SHORT)
+                .show()
             val filePath = "$dirPath$fileName.mp3"
             val timestamp = Date().time
             val wavesPath = "$dirPath$fileName"
@@ -200,10 +193,16 @@ class MainFragment : Fragment(), OnTimeListener {
             } catch (_: IOException) {
 
             }
-            val record = AudioRecord(null,fileName, filePath, timestamp, duration, wavesPath)
-            GlobalScope.launch {
-                audioDAO.insert(record)
-            }
+            viewModel.insertAudio(
+                AudioRecord(
+                    null,
+                    fileName,
+                    filePath,
+                    timestamp,
+                    duration,
+                    wavesPath
+                )
+            )
         }
 
         alertDialogBuilder.setNegativeButton("Удалить") { _, _ ->
