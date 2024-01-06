@@ -195,8 +195,7 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
             File("$dirPath$filename.mp3").delete()
             Toast.makeText(this, "Запись удалена", Toast.LENGTH_SHORT).show()
         }
-
+//привет
         alertDialogBuilder.show()
     }
-
 }
