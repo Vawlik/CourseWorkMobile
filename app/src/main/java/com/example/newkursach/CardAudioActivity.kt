@@ -13,8 +13,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.Room
+import com.example.newkursach.data.AppDatabase
+import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.CardAudioBinding
+import com.example.newkursach.secondary.OnItemClickListener
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.GlobalScope
@@ -24,7 +26,7 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
     lateinit var binding: CardAudioBinding
     private lateinit var records: ArrayList<AudioRecord>
     private lateinit var mAdapter: AudioAdapter
-    private lateinit var db: AppDatabase
+    private val audioDAO = AppDatabase.getInstance(this).audioRecordDao()
     private var allChecked = false
 
     private lateinit var toolbar: MaterialToolbar
@@ -69,7 +71,7 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
 
         records = ArrayList()
 
-        db = Room.databaseBuilder(this, AppDatabase::class.java, "audioRecords").build()
+
         mAdapter = AudioAdapter(records, this)
         binding.recid.apply {
             adapter = mAdapter
@@ -100,7 +102,7 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
             builder.setPositiveButton("Удалить") { _, _ ->
                 val toDel = records.filter { it.isChecked }.toTypedArray()
                 GlobalScope.launch {
-                    db.audioRecordDao().delete(toDel)
+                    audioDAO.delete(toDel)
                     runOnUiThread {
                         records.removeAll(toDel)
                         mAdapter.notifyDataSetChanged()
@@ -166,7 +168,7 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
     private fun fetchAll() {
         GlobalScope.launch {
             records.clear()
-            val queryResult = db.audioRecordDao().getAll()
+            val queryResult = audioDAO.getAll()
             records.addAll(queryResult)
 
             runOnUiThread {
@@ -176,13 +178,13 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     override fun onItemClickListener(position: Int) {
-        var audioRecord = records[position]
+        val audioRecord = records[position]
 
         if (mAdapter.isEditMode()) {
             records[position].isChecked = !records[position].isChecked
             mAdapter.notifyItemChanged(position)
 
-            var select = records.count { it.isChecked }
+            val select = records.count { it.isChecked }
             when (select) {
                 0 -> {
                     editDis()
@@ -200,7 +202,7 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
                 }
             }
         } else {
-            var intent = Intent(this, AudioPlayerActivity::class.java)
+            val intent = Intent(this, AudioPlayerActivity::class.java)
             intent.putExtra("filepath", audioRecord.filepath)
             intent.putExtra("filename", audioRecord.filename)
             startActivity(intent)
@@ -252,9 +254,8 @@ class CardAudioActivity : AppCompatActivity(), OnItemClickListener {
                 if (inputName.isEmpty()) {
                     Toast.makeText(this, "Требуется имя файла", Toast.LENGTH_SHORT).show()
                 } else {
-                    record.filename = inputName
                     GlobalScope.launch {
-                        db.audioRecordDao().update(record)
+                        audioDAO.update(AudioRecord(record.id,inputName,record.filepath,record.timestamp,record.duration,record.wavesPath))
                         runOnUiThread {
                             mAdapter.notifyItemChanged(records.indexOf(record))
                             editModeLeft()

@@ -11,7 +11,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.room.Room
-import com.example.kursach2.TimerRecord
+import com.example.newkursach.secondary.TimerRecord
+import com.example.newkursach.data.AppDatabase
+import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.ActivityMainBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -38,7 +40,7 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
     private var duration = ""
     private lateinit var timerRecord: TimerRecord
 
-    private lateinit var db: AppDatabase
+    private val audioDAO = AppDatabase.getInstance(this).audioRecordDao()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,9 +49,6 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
         permGrand =
             ActivityCompat.checkSelfPermission(this, perm[0]) == PackageManager.PERMISSION_GRANTED
         if (!permGrand) ActivityCompat.requestPermissions(this, perm, REQUEST_CODE)
-
-
-        db = Room.databaseBuilder(this, AppDatabase::class.java, "audioRecords").build()
 
         timerRecord = TimerRecord(this)
 
@@ -108,8 +107,8 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
         }
         recorder = MediaRecorder()
         dirPath = "${externalCacheDir?.absolutePath}/"
-        var simpleDateFormat = SimpleDateFormat("yyyy.MM.DD_hh.mm.ss")
-        var date: String = simpleDateFormat.format(Date())
+        val simpleDateFormat = SimpleDateFormat("yyyy.MM.DD_hh.mm.ss")
+        val date: String = simpleDateFormat.format(Date())
         filename = "audio_record_$date"
         recorder.apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -118,7 +117,7 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
             setOutputFile("$dirPath$filename.mp3")
             try {
                 prepare()
-            } catch (e: IOException) {
+            } catch (_: IOException) {
             }
             start()
         }
@@ -168,26 +167,26 @@ class MainActivity : AppCompatActivity(), TimerRecord.OnTimeListener {
         alertDialogBuilder.setPositiveButton("Сохранить") { _, _ ->
             val fileName = input.text.toString()
             if (fileName != filename) {
-                var newFile = File("$dirPath$fileName.mp3")
+                val newFile = File("$dirPath$fileName.mp3")
                 File("$dirPath$filename.mp3").renameTo(newFile)
             }
             Toast.makeText(this, "Запись сохранена как $fileName", Toast.LENGTH_SHORT).show()
-            var filePath = "$dirPath$fileName.mp3"
-            var timestamp = Date().time
-            var wavesPath = "$dirPath$fileName"
+            val filePath = "$dirPath$fileName.mp3"
+            val timestamp = Date().time
+            val wavesPath = "$dirPath$fileName"
 
             try {
-                var fos = FileOutputStream(wavesPath)
-                var out = ObjectOutputStream(fos)
+                val fos = FileOutputStream(wavesPath)
+                val out = ObjectOutputStream(fos)
                 out.writeObject(wave)
                 fos.close()
                 out.close()
-            } catch (e: IOException) {
+            } catch (_: IOException) {
 
             }
-            var record = AudioRecord(fileName, filePath, timestamp, duration, wavesPath)
+            val record = AudioRecord(null,fileName, filePath, timestamp, duration, wavesPath)
             GlobalScope.launch {
-                db.audioRecordDao().insert(record)
+                audioDAO.insert(record)
             }
         }
 

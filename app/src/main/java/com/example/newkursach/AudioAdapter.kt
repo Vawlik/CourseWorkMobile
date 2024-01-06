@@ -8,7 +8,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.RecyclerItemBinding
+import com.example.newkursach.secondary.OnItemClickListener
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -40,13 +42,13 @@ class AudioAdapter(var records: ArrayList<AudioRecord>, var listener: OnItemClic
         }
 
         override fun onClick(v: View?) {
-            var position = adapterPosition
+            val position = adapterPosition
             if (position != RecyclerView.NO_POSITION)
                 listener.onItemClickListener(position)
         }
 
         override fun onLongClick(v: View?): Boolean {
-            var position = adapterPosition
+            val position = adapterPosition
             if (position != RecyclerView.NO_POSITION)
                 listener.onItemLongClickListener(position)
             return true
@@ -65,10 +67,10 @@ class AudioAdapter(var records: ArrayList<AudioRecord>, var listener: OnItemClic
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
         if (position != RecyclerView.NO_POSITION) {
-            var record = records[position]
+            val record = records[position]
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
-            var date = Date(record.timestamp)
-            var strDate = dateFormat.format(date)
+            val date = Date(record.timestamp)
+            val strDate = dateFormat.format(date)
             holder.fileNameText.text = record.filename
             holder.metaText.text = "${record.duration} $strDate"
 

@@ -1,4 +1,4 @@
-package com.example.newkursach
+package com.example.newkursach.secondary
 
 import android.content.Context
 import android.graphics.Canvas

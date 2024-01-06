@@ -42,8 +42,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        var filePath = intent.getStringExtra("filepath")
-        var fileName = intent.getStringExtra("filename")
+        val filePath = intent.getStringExtra("filepath")
+        val fileName = intent.getStringExtra("filename")
 
         toolbar = binding.toolBar
         filenamebar = binding.filenameBar

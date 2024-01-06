@@ -1,4 +1,4 @@
-package com.example.newkursach
+package com.example.newkursach.secondary
 
 interface OnItemClickListener {
     fun onItemClickListener(position: Int)

@@ -1,4 +1,4 @@
-package com.example.kursach2
+package com.example.newkursach.secondary
 
 import android.os.Looper
 
