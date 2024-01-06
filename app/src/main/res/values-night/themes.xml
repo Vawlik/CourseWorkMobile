@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.NewKursach" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="rippleColor">@color/grayRipple</item>
+    </style>
+
+    <style name="Theme.NewKursach" parent="Base.Theme.NewKursach" />
+    <style name="TextLay" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="boxBackgroundColor">@color/purple</item>
+        <item name="boxCornerRadiusBottomStart">26dp</item>
+        <item name="boxCornerRadiusBottomEnd">26dp</item>
+        <item name="boxCornerRadiusTopEnd">26dp</item>
+        <item name="boxCornerRadiusTopStart">26dp</item>
+    </style>
+</resources>
