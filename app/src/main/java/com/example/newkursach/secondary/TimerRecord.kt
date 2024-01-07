@@ -36,13 +36,12 @@ class TimerRecord(listener: OnTimeListener) {
         val sec = (duration / 1000) % 60
         val min = (duration / (1000 * 60)) % 60
         val hour = (duration / (1000 * 60 * 60))
-        var formatted = if (hour > 0)
-            "%02d:%02d:%02d:%02d".format(hour, min, sec, milsec / 10)
-        else
-            "%02d:%02d:%02d".format(min, sec, milsec / 10)
+        val formatted = if (hour > 0) "%02d:%02d:%02d:%02d".format(hour, min, sec, milsec / 10)
+        else "%02d:%02d:%02d".format(min, sec, milsec / 10)
         return formatted
     }
 }
+
 interface OnTimeListener {
     fun onTime(duration: String)
 }

@@ -26,23 +26,23 @@ class WaveSpeakView(context: Context?, attrs: AttributeSet?) : View(context, att
     }
 
     fun addWave(amp: Float) {
-        var norm = Math.min(amp.toInt() / 50, 400).toFloat()
+        val norm = Math.min(amp.toInt() / 50, 400).toFloat()
         wave.add(norm)
 
         spike.clear()
-        var waves = wave.takeLast(maxSpike)
+        val waves = wave.takeLast(maxSpike)
         for (i in waves.indices) {
-            var left = swidth - i * (width + d)
-            var top = (shight / 2 - waves[i] / 2) + 10f
-            var right = left + width
-            var bottom = (top + 5f) + waves[i]
+            val left = swidth - i * (width + d)
+            val top = (shight / 2 - waves[i] / 2) + 10f
+            val right = left + width
+            val bottom = (top + 5f) + waves[i]
             spike.add(RectF(left, top, right, bottom))
         }
         invalidate()
     }
 
     fun clear(): ArrayList<Float> {
-        var waves = wave.clone() as ArrayList<Float>
+        val waves = wave.clone() as ArrayList<Float>
         wave.clear()
         spike.clear()
         invalidate()

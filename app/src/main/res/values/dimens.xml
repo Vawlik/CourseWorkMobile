@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <dimen name="filenamebarmagin">46dp</dimen>
+    <dimen name="filenametextsize">20sp</dimen>
+    <dimen name="chipwidth">60dp</dimen>
+    <dimen name="chipheight">48dp</dimen>
+    <dimen name="chipmaginbottom">20dp</dimen>
+    <dimen name="chiptextsize">13sp</dimen>
+    <dimen name="marginbottom30">30dp</dimen>
+    <dimen name="marginbottom20">20dp</dimen>
+    <dimen name="marginend16">16dp</dimen>
+    <dimen name="marginbottom40dp">40dp</dimen>
+    <dimen name="imagesquare66">66dp</dimen>
+    <dimen name="height130dp">130dp</dimen>
+    <dimen name="padding8dp">8dp</dimen>
+    <dimen name="padding16dp">16dp</dimen>
+    <dimen name="marginEnd90dp">90dp</dimen>
+    <dimen name="timertextsize">56sp</dimen>
+    <dimen name="height400">400px</dimen>
+    <dimen name="marginbottom80dp">80dp</dimen>
+    <dimen name="icon56dp">56dp</dimen>
+    <dimen name="margin25dp">25dp</dimen>
+    <dimen name="thumbnail36dp">36dp</dimen>
+    <dimen name="filenamesize">18sp</dimen>
+    <dimen name="metatextsize">14sp</dimen>
 </resources>

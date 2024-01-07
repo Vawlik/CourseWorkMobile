@@ -14,12 +14,10 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.newkursach.R
 import com.example.newkursach.databinding.FragmentAudioPlayerBinding
-import com.example.newkursach.viewmodel.AudioPlayerViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
 
@@ -37,13 +35,6 @@ class AudioPlayerFragment : Fragment() {
     private val args by navArgs<AudioPlayerFragmentArgs>()
     private val fileName by lazy { args.filename }
     private val filePath by lazy { args.filepath }
-    private val viewModel: AudioPlayerViewModel by viewModels {
-        AudioPlayerViewModel.Factory(
-            fileName,
-            filePath
-        )
-    }
-
 
     private lateinit var forwardbut: ImageButton
     private lateinit var speedchip: Chip
@@ -55,9 +46,8 @@ class AudioPlayerFragment : Fragment() {
     private var playSpeed = 1.0f
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         super.onCreate(savedInstanceState)
         _binding = FragmentAudioPlayerBinding.inflate(layoutInflater, container, false)
 
@@ -120,17 +110,14 @@ class AudioPlayerFragment : Fragment() {
             seekBar.progress -= jumpVal
         }
         speedchip.setOnClickListener {
-            if (playSpeed != 2f)
-                playSpeed += 0.5f
-            else
-                playSpeed = 0.5f
+            if (playSpeed != 2f) playSpeed += 0.5f
+            else playSpeed = 0.5f
             mediaPlayer.playbackParams = PlaybackParams().setSpeed(playSpeed)
             speedchip.text = "x $playSpeed"
         }
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser)
-                    mediaPlayer.seekTo(progress)
+                if (fromUser) mediaPlayer.seekTo(progress)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -146,12 +133,9 @@ class AudioPlayerFragment : Fragment() {
     private fun playPause() {
         if (!mediaPlayer.isPlaying) {
             mediaPlayer.start()
-            playbut.background =
-                ResourcesCompat.getDrawable(
-                    resources,
-                    R.drawable.pauseaudio,
-                    requireContext().theme
-                )
+            playbut.background = ResourcesCompat.getDrawable(
+                resources, R.drawable.pauseaudio, requireContext().theme
+            )
             handler.postDelayed(runnable, delay)
         } else {
             mediaPlayer.pause()

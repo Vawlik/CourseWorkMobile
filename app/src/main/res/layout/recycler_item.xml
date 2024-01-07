@@ -6,19 +6,19 @@
     android:clickable="true"
     android:background="?selectableItemBackground"
     android:gravity="center_vertical"
-    android:padding="20dp">
+    android:padding="@dimen/marginbottom20">
 
     <ImageView
         android:id="@+id/thumbnail"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="@dimen/thumbnail36dp"
+        android:layout_height="@dimen/thumbnail36dp"
         android:clickable="false"
         android:background="@drawable/cycle"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="@dimen/marginbottom20"
         android:src="@drawable/play" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
@@ -27,28 +27,28 @@
             android:id="@+id/filename"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/filenamesize"
             android:textStyle="bold"
-            android:text="name"/>
+            android:text="@string/filenametext"/>
 
         <TextView
             android:id="@+id/meta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:text="meta"/>
+            android:textSize="@dimen/metatextsize"
+            android:text="@string/metaname"/>
 
     </LinearLayout>
     <ImageView
         android:id="@+id/sharebut"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="@dimen/marginbottom20"
+        android:layout_height="@dimen/marginbottom20"
         android:clickable="false"
         android:src="@drawable/share" />
     <CheckBox
         android:id="@+id/checkbox"
-        android:layout_width="30dp"
-        android:layout_height="20dp"
+        android:layout_width="@dimen/marginbottom30"
+        android:layout_height="@dimen/marginbottom20"
         android:visibility="gone"
         android:clickable="false"/>
 

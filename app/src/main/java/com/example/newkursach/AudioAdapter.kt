@@ -1,6 +1,7 @@
 package com.example.newkursach
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +13,11 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.RecyclerItemBinding
 import com.example.newkursach.secondary.OnItemClickListener
+import com.example.newkursach.secondary.Utils
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class AudioAdapter(var listener: OnItemClickListener) :
+class AudioAdapter(private val location_undefined: String, var listener: OnItemClickListener) :
     RecyclerView.Adapter<AudioAdapter.CardViewHolder>() {
     private var editMode = false
     fun isEditMode(): Boolean {
@@ -81,8 +83,20 @@ class AudioAdapter(var listener: OnItemClickListener) :
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
             val date = Date(record.timestamp)
             val strDate = dateFormat.format(date)
+
             holder.fileNameText.text = record.filename
-            holder.metaText.text = "${record.duration} $strDate"
+
+            val address = Utils.getAddressFromCoordinates(
+                holder.itemView.context,
+                record.latitude ?: 0.0,
+                record.longitude ?: 0.0
+            )
+
+            holder.metaText.text = if (address.isNotBlank()) {
+                "${record.duration} $strDate\n$address"
+            } else {
+                "${record.duration} $strDate\n${location_undefined}"
+            }
 
             holder.shareButton.setOnClickListener {
                 listener.onShareClickListener(position)

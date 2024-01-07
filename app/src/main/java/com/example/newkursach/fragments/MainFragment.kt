@@ -1,6 +1,7 @@
 package com.example.newkursach.fragments
 
 import android.content.pm.PackageManager
+import android.location.Location
 import android.media.MediaRecorder
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,15 +11,20 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.newkursach.R
 import com.example.newkursach.data.AudioRecord
 import com.example.newkursach.databinding.FragmentMainBinding
+import com.example.newkursach.secondary.MICROPHONE_REQUEST_CODE
 import com.example.newkursach.secondary.OnTimeListener
+import com.example.newkursach.secondary.PERMISSIONS_REQUEST_LOCATION
 import com.example.newkursach.secondary.TimerRecord
 import com.example.newkursach.viewmodel.MainViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -26,7 +32,6 @@ import java.io.ObjectOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 
-const val REQUEST_CODE = 200
 
 class MainFragment : Fragment(), OnTimeListener {
     private var _binding: FragmentMainBinding? = null
@@ -40,23 +45,26 @@ class MainFragment : Fragment(), OnTimeListener {
     private var isRec = false
     private var isPau = false
     private var duration = ""
+    private var latitude: Double? = null
+    private var longitude: Double? = null
     private lateinit var timerRecord: TimerRecord
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory() }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         super.onCreate(savedInstanceState)
         _binding = FragmentMainBinding.inflate(layoutInflater, container, false)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
-        permGrand =
-            ActivityCompat.checkSelfPermission(
-                requireContext(),
-                perm[0]
-            ) == PackageManager.PERMISSION_GRANTED
-        if (!permGrand) ActivityCompat.requestPermissions(requireActivity(), perm, REQUEST_CODE)
+        permGrand = ActivityCompat.checkSelfPermission(
+            requireContext(), perm[0]
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!permGrand) ActivityCompat.requestPermissions(
+            requireActivity(), perm, MICROPHONE_REQUEST_CODE
+        )
 
         timerRecord = TimerRecord(this)
 
@@ -67,32 +75,72 @@ class MainFragment : Fragment(), OnTimeListener {
                 else -> startRec()
             }
         }
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            requestLocation()
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSIONS_REQUEST_LOCATION
+            )
+        }
+
         binding.menu.setOnClickListener {
-            Toast.makeText(requireContext(), "Сохраненные записи", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.saved_records, Toast.LENGTH_SHORT).show()
             val action = MainFragmentDirections.actionMainFragmentToCardAudioFragment()
             findNavController().navigate(action)
         }
+
         binding.donebut.setOnClickListener {
             stopRec()
             showSaveDialog()
-            Toast.makeText(requireContext(), "Запись сохранена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.recording_saved, Toast.LENGTH_SHORT).show()
         }
 
         binding.close.setOnClickListener {
             stopRec()
             File("$dirPath$filename.mp3").delete()
-            Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.recording_deleted, Toast.LENGTH_SHORT).show()
         }
         binding.close.isClickable = false
         return binding.root
+    }
+
+    private fun requestLocation() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    this.latitude = location.latitude
+                    this.longitude = location.longitude
+                }
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSIONS_REQUEST_LOCATION
+            )
+        }
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE) permGrand =
+        if (requestCode == MICROPHONE_REQUEST_CODE) permGrand =
             grantResults[0] == PackageManager.PERMISSION_GRANTED
+        if (requestCode == PERMISSIONS_REQUEST_LOCATION) {
+            permGrand = grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (permGrand) {
+                requestLocation()
+            }
+        }
     }
 
     private fun pauseRec() {
@@ -111,7 +159,7 @@ class MainFragment : Fragment(), OnTimeListener {
 
     private fun startRec() {
         if (!permGrand) {
-            ActivityCompat.requestPermissions(requireActivity(), perm, REQUEST_CODE)
+            ActivityCompat.requestPermissions(requireActivity(), perm, MICROPHONE_REQUEST_CODE)
             return
         }
         recorder = MediaRecorder()
@@ -165,21 +213,24 @@ class MainFragment : Fragment(), OnTimeListener {
 
     private fun showSaveDialog() {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
-        alertDialogBuilder.setTitle("Сохранить запись?")
+
+        alertDialogBuilder.setTitle(R.string.save_dialog_title)
 
         val input = EditText(requireContext())
-        input.hint = "Введите название файла"
+        input.hint = getString(R.string.filename_hint)
         input.setText(filename)
 
         alertDialogBuilder.setView(input)
-        alertDialogBuilder.setPositiveButton("Сохранить") { _, _ ->
+
+        alertDialogBuilder.setPositiveButton(R.string.save_button) { _, _ ->
             val fileName = input.text.toString()
             if (fileName != filename) {
                 val newFile = File("$dirPath$fileName.mp3")
                 File("$dirPath$filename.mp3").renameTo(newFile)
             }
-            Toast.makeText(requireContext(), "Запись сохранена как $fileName", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(
+                requireContext(), getString(R.string.record_saved_as, fileName), Toast.LENGTH_SHORT
+            ).show()
             val filePath = "$dirPath$fileName.mp3"
             val timestamp = Date().time
             val wavesPath = "$dirPath$fileName"
@@ -195,20 +246,15 @@ class MainFragment : Fragment(), OnTimeListener {
             }
             viewModel.insertAudio(
                 AudioRecord(
-                    null,
-                    fileName,
-                    filePath,
-                    timestamp,
-                    duration,
-                    wavesPath
+                    null, fileName, filePath, timestamp, duration, wavesPath, latitude, longitude
                 )
             )
         }
 
-        alertDialogBuilder.setNegativeButton("Удалить") { _, _ ->
-            File("$dirPath$filename.mp3").delete()
-            Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show()
+        alertDialogBuilder.setNegativeButton(R.string.cancel_button) { _, _ ->
+            Toast.makeText(requireContext(), R.string.save_cancelled, Toast.LENGTH_SHORT).show()
         }
+
         alertDialogBuilder.show()
     }
 

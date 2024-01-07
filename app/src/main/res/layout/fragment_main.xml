@@ -10,9 +10,9 @@
         android:id="@+id/timerMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="00:00.00"
-        android:textSize="56sp"
+        android:layout_marginBottom="@dimen/marginbottom30"
+        android:text="@string/timertime"
+        android:textSize="@dimen/timertextsize"
         app:layout_constraintBottom_toTopOf="@+id/waveSpeak"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
@@ -20,47 +20,47 @@
     <com.example.newkursach.secondary.WaveSpeakView
         android:id="@+id/waveSpeak"
         android:layout_width="match_parent"
-        android:layout_height="400px"
+        android:layout_height="@dimen/height400"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="@dimen/marginbottom80dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
             android:id="@+id/close"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="@dimen/icon56dp"
+            android:layout_height="@dimen/icon56dp"
             android:background="@drawable/cycle"
             android:contentDescription="@string/app_name"
             android:src="@drawable/close" />
 
         <ImageButton
             android:id="@+id/record"
-            android:layout_width="66dp"
-            android:layout_height="66dp"
-            android:layout_marginStart="25dp"
-            android:layout_marginEnd="25dp"
+            android:layout_width="@dimen/imagesquare66"
+            android:layout_height="@dimen/imagesquare66"
+            android:layout_marginStart="@dimen/margin25dp"
+            android:layout_marginEnd="@dimen/margin25dp"
             android:background="@drawable/cyclerec"
             android:contentDescription="@string/app_name" />
 
         <ImageButton
             android:id="@+id/menu"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="@dimen/icon56dp"
+            android:layout_height="@dimen/icon56dp"
             android:background="@drawable/cycle"
             android:contentDescription="@string/app_name"
             android:src="@drawable/menu" />
 
         <ImageButton
             android:id="@+id/donebut"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="@dimen/icon56dp"
+            android:layout_height="@dimen/icon56dp"
             android:background="@drawable/cycle"
             android:contentDescription="@string/app_name"
             android:src="@drawable/donebut"

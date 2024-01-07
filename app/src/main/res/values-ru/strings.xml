@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Диктофон</string>
+    <string name="hello_blank_fragment">Привет макет фрагмент</string>
+    <string name="save_dialog_title">Сохранить запись?</string>
+    <string name="filename_hint">Введите название файла</string>
+    <string name="save_button">Сохранить</string>
+    <string name="cancel_button">Удалить</string>
+    <string name="record_saved_as">Запись сохранена в %s</string>
+    <string name="save_cancelled">Запись удалена</string>
+    <string name="saved_records">Сохраненные записи</string>
+    <string name="recording_saved">Запись сохранена</string>
+    <string name="recording_deleted">Запись удалена</string>
+    <string name="location_undefined">Местоположение не определено</string>
+    <string name="delete_records_title">Удалить запись(-и)?</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отменить</string>
+    <string name="rename_one_file">Можно выбрать только один файл для переименования</string>
+    <string name="enter_filename">Введите название файла</string>
+    <string name="rename_record">Переименовать запись?</string>
+    <string name="save">Сохранить</string>
+    <string name="filename_required">Требуется имя файла</string>
+    <string name="share_audio_file">Поделиться аудиофайлом</string>
+    <string name="share_via">Поделиться через</string>
+    <string name="long_press">Долгое нажатие</string>
+    <string name="progressTime">0:00</string>
+    <string name="ProgressTimeEnd">0:00</string>
+    <string name="saverecord">Сохраненные записи</string>
+    <string name="chip">x 1.0</string>
+    <string name="deletetext">Удалить</string>
+    <string name="edittext">Изменить</string>
+    <string name="timertime">00:00.00</string>
+    <string name="filenametext">name</string>
+    <string name="metaname">meta</string>
+</resources>

@@ -1,7 +1,5 @@
 package com.example.newkursach.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,11 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val audioDAO: AudioRecordDao) : ViewModel() {
-//    private val _record = MediatorLiveData<AudioRecord>()
-//      val record: LiveData<AudioRecord> = _record
 
 
-    fun insertAudio(record: AudioRecord){
+    fun insertAudio(record: AudioRecord) {
         viewModelScope.launch(Dispatchers.IO) {
             audioDAO.insert(record)
         }
@@ -30,7 +26,8 @@ class MainViewModel(private val audioDAO: AudioRecordDao) : ViewModel() {
             override fun <T : ViewModel> create(
                 modelClass: Class<T>, extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                val application =
+                    checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
                 return MainViewModel(AppDatabase.getInstance(application).audioRecordDao()) as T
             }
         }

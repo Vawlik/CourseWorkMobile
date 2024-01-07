@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [AudioRecord::class], version = 3)
+@Database(entities = [AudioRecord::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun audioRecordDao(): AudioRecordDao
+
     companion object {
         private var audioDB: AppDatabase? = null
         fun getInstance(context: Context): AppDatabase {

@@ -3,7 +3,6 @@ package com.example.newkursach.fragments
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -72,15 +71,13 @@ class CardAudioFragment : Fragment() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setDisplayShowHomeEnabled(true)
         toolbar.setNavigationOnClickListener {
-            val action =
-                CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
+            val action = CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
             findNavController().navigate(action)
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    val action =
-                        CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
+                    val action = CardAudioFragmentDirections.actionCardAudioFragmentToMainFragment()
                     findNavController().navigate(action)
                 }
             })
@@ -91,7 +88,7 @@ class CardAudioFragment : Fragment() {
 
         editBar = binding.editBar
         butClose = binding.butClose
-        butSelectAll = binding.butAll
+//        butSelectAll = binding.butAll
 
         bottomSheet = binding.bottomSheet
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
@@ -99,7 +96,7 @@ class CardAudioFragment : Fragment() {
 
         val recyclerView: RecyclerView = binding.recid
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
-        adapterAudioRecords = AudioAdapter(listener).apply {
+        adapterAudioRecords = AudioAdapter(getString(R.string.location_undefined), listener).apply {
             viewModel.records.observe(viewLifecycleOwner) {
                 setRecords(it)
             }
@@ -110,31 +107,30 @@ class CardAudioFragment : Fragment() {
             exitEditMode()
         }
 
-        butSelectAll.setOnClickListener {
-            allIsChecked = !allIsChecked
-            viewModel.records.observe(viewLifecycleOwner) {
-                viewModel.setIsChecked(allIsChecked)
-            }
-            if (allIsChecked) {
-                switchDeleteMode(true)
-                switchEditMode(false)
-            } else {
-                switchDeleteMode(false)
-                switchEditMode(false)
-            }
-        }
+//        butSelectAll.setOnClickListener {
+//            allIsChecked = !allIsChecked
+//            viewModel.records.observe(viewLifecycleOwner) {
+//                viewModel.setIsChecked(allIsChecked)
+//            }
+//            if (allIsChecked) {
+//                switchDeleteMode(true)
+//                switchEditMode(false)
+//            } else {
+//                switchDeleteMode(false)
+//                switchEditMode(false)
+//            }
+//        }
         deleteBut.setOnClickListener {
             val builder = AlertDialog.Builder(requireContext())
-            builder.setTitle("Удалить запись(-и)?")
-            builder.setPositiveButton("Удалить") { _, _ ->
+            builder.setTitle(getString(R.string.delete_records_title))
+            builder.setPositiveButton(getString(R.string.delete)) { _, _ ->
                 viewModel.records.observe(viewLifecycleOwner) { records ->
                     val recordsToDelete = records.filter { it.isChecked }.toList()
-
                     viewModel.deleteRecords(recordsToDelete)
                 }
                 exitEditMode()
             }
-            builder.setNegativeButton("Отменить") { _, _ -> }
+            builder.setNegativeButton(getString(R.string.cancel)) { _, _ -> }
             val dialog = builder.create()
             dialog.show()
         }
@@ -147,7 +143,6 @@ class CardAudioFragment : Fragment() {
 
     private fun exitEditMode() {
         if (isNavigationBlocked) {
-            // Если навигация заблокирована, не выполняйте выход из режима редактирования
             return
         }
 
@@ -156,7 +151,6 @@ class CardAudioFragment : Fragment() {
         actionBars?.setDisplayShowHomeEnabled(true)
         editBar.visibility = View.GONE
 
-        // Скройте нижнюю панель
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
         viewModel.records.observe(viewLifecycleOwner) {
@@ -166,7 +160,6 @@ class CardAudioFragment : Fragment() {
         }
         adapterAudioRecords.setEditMode(false)
 
-        // Запустите таймер блокировки перехода на следующий фрагмент
         isNavigationBlocked = true
         viewLifecycleOwner.lifecycleScope.launch {
             delay(2000) // 2 секунды
@@ -195,37 +188,36 @@ class CardAudioFragment : Fragment() {
             val selectedRecords = it.filter { it.isChecked }
             if (selectedRecords.size != 1) {
                 Toast.makeText(
-                    requireContext(),
-                    "Можно выбрать только один файл для переименования",
-                    Toast.LENGTH_SHORT
+                    requireContext(), getString(R.string.rename_one_file), Toast.LENGTH_SHORT
                 ).show()
                 return@observe
             }
             val record = selectedRecords[0]
             val input = EditText(requireContext())
-            input.hint = "Введите название файла"
+            input.hint = getString(R.string.enter_filename)
             input.setText(record.filename)
-            val dialog = AlertDialog.Builder(requireContext()).setTitle("Переименовать запись?").setView(input)
-                .setPositiveButton("Сохранить") { _, _ ->
-                    if (input.text.toString().isBlank()) {
-                        Toast.makeText(requireContext(), "Требуется имя файла", Toast.LENGTH_SHORT)
-                            .show()
-                    } else {
-                        // Скрыть клавиатуру
-                        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+            val dialog =
+                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.rename_record))
+                    .setView(input).setPositiveButton(getString(R.string.save)) { _, _ ->
+                        if (input.text.toString().isBlank()) {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.filename_required),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            val imm =
+                                context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(view?.windowToken, 0)
 
-                        // Добавить задержку перед выходом из режима редактирования
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            viewModel.updateRecord(record, input.text.toString())
-                            adapterAudioRecords.notifyItemChanged(it.indexOf(record))
-                            exitEditMode()
-                        }, 300) // Задержка в миллисекундах
-                    }
-                }.setNegativeButton("Отменить") { _, _ ->
-                }.create()
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                viewModel.updateRecord(record, input.text.toString())
+                                adapterAudioRecords.notifyItemChanged(it.indexOf(record))
+                                exitEditMode()
+                            }, 300)
+                        }
+                    }.setNegativeButton(getString(R.string.cancel)) { _, _ -> }.create()
 
-            // Показать диалог
             dialog.show()
         }
     }
@@ -236,25 +228,26 @@ class CardAudioFragment : Fragment() {
                 val record = records[position]
                 val context = requireContext()
                 val file = File(record.filepath)
-                val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                val fileUri =
+                    FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
                 val shareIntent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_STREAM, fileUri)
-                    putExtra(Intent.EXTRA_TITLE, "Поделиться аудиофайлом")
+                    putExtra(Intent.EXTRA_TITLE, getString(R.string.share_audio_file))
                     type = "audio/mp3"
                 }
+
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                startActivity(Intent.createChooser(shareIntent, "Поделиться через"))
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.share_via)))
             }
         }
 
         override fun onItemLongClickListener(position: Int) {
             val actionBars = (requireActivity() as AppCompatActivity).supportActionBar
-            Toast.makeText(requireContext(), "Долгое нажатие", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.long_press), Toast.LENGTH_SHORT)
+                .show()
             adapterAudioRecords.setEditMode(true)
-//            viewModel.records.observe(viewLifecycleOwner) {
-//                it[position].isChecked = !it[position].isChecked
-//            }
             val recordToDelete = viewModel.records.value?.get(position)
             if (recordToDelete != null) {
                 recordToDelete.isChecked = !recordToDelete.isChecked

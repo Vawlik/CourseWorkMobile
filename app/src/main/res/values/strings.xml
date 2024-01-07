@@ -1,4 +1,34 @@
 <resources>
-    <string name="app_name">Диктофон</string>
+    <string name="app_name">Dictophone</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="save_dialog_title">Save Recording?</string>
+    <string name="filename_hint">Enter file name</string>
+    <string name="save_button">Save</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="record_saved_as">Recording saved as %s</string>
+    <string name="save_cancelled">Save cancelled</string>
+    <string name="saved_records">Saved Records</string>
+    <string name="recording_saved">Recording saved</string>
+    <string name="recording_deleted">Recording deleted</string>
+    <string name="location_undefined">Location undefined</string>
+    <string name="delete_records_title">Delete the record(s)?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="rename_one_file">You can only select one file for renaming</string>
+    <string name="enter_filename">Enter the file name</string>
+    <string name="rename_record">Rename the recording?</string>
+    <string name="save">Save</string>
+    <string name="filename_required">File name is required</string>
+    <string name="share_audio_file">Share audio file</string>
+    <string name="share_via">Share via</string>
+    <string name="long_press">Long press</string>
+    <string name="chip">x 1.0</string>
+    <string name="progressTime">0:00</string>
+    <string name="ProgressTimeEnd">0:00</string>
+    <string name="saverecord">Saved Records</string>
+    <string name="deletetext">Delete</string>
+    <string name="edittext">Edit</string>
+    <string name="timertime">00:00.00</string>
+    <string name="filenametext">name</string>
+    <string name="metaname">meta</string>
 </resources>
