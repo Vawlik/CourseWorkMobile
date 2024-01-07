@@ -1,12 +1,16 @@
 package com.example.newkursach.fragments
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -16,8 +20,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +34,9 @@ import com.example.newkursach.secondary.OnItemClickListener
 import com.example.newkursach.viewmodel.CardAudioViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.File
 
 
 class CardAudioFragment : Fragment() {
@@ -35,7 +44,7 @@ class CardAudioFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var adapterAudioRecords: AudioAdapter
     private var allIsChecked = false
-
+    private var isNavigationBlocked = false
     private lateinit var toolbar: MaterialToolbar
 
     private val viewModel: CardAudioViewModel by viewModels { CardAudioViewModel.Factory() }
@@ -118,9 +127,9 @@ class CardAudioFragment : Fragment() {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle("Удалить запись(-и)?")
             builder.setPositiveButton("Удалить") { _, _ ->
+                viewModel.records.observe(viewLifecycleOwner) { records ->
+                    val recordsToDelete = records.filter { it.isChecked }.toList()
 
-                viewModel.records.observe(viewLifecycleOwner) {
-                    val recordsToDelete = it.filter { it.isChecked }.toList()
                     viewModel.deleteRecords(recordsToDelete)
                 }
                 exitEditMode()
@@ -137,12 +146,18 @@ class CardAudioFragment : Fragment() {
     }
 
     private fun exitEditMode() {
+        if (isNavigationBlocked) {
+            // Если навигация заблокирована, не выполняйте выход из режима редактирования
+            return
+        }
+
         val actionBars = (requireActivity() as AppCompatActivity).supportActionBar
         actionBars?.setDisplayHomeAsUpEnabled(true)
         actionBars?.setDisplayShowHomeEnabled(true)
         editBar.visibility = View.GONE
+
+        // Скройте нижнюю панель
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
         viewModel.records.observe(viewLifecycleOwner) {
             it.map {
@@ -151,6 +166,12 @@ class CardAudioFragment : Fragment() {
         }
         adapterAudioRecords.setEditMode(false)
 
+        // Запустите таймер блокировки перехода на следующий фрагмент
+        isNavigationBlocked = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(2000) // 2 секунды
+            isNavigationBlocked = false
+        }
     }
 
 
@@ -184,48 +205,59 @@ class CardAudioFragment : Fragment() {
             val input = EditText(requireContext())
             input.hint = "Введите название файла"
             input.setText(record.filename)
-            AlertDialog.Builder(requireContext()).setTitle("Переименовать запись?").setView(input)
+            val dialog = AlertDialog.Builder(requireContext()).setTitle("Переименовать запись?").setView(input)
                 .setPositiveButton("Сохранить") { _, _ ->
                     if (input.text.toString().isBlank()) {
                         Toast.makeText(requireContext(), "Требуется имя файла", Toast.LENGTH_SHORT)
                             .show()
                     } else {
-                        viewModel.updateRecord(record, input.text.toString())
-                        adapterAudioRecords.notifyItemChanged(it.indexOf(record))
-                        exitEditMode()
+                        // Скрыть клавиатуру
+                        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+
+                        // Добавить задержку перед выходом из режима редактирования
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            viewModel.updateRecord(record, input.text.toString())
+                            adapterAudioRecords.notifyItemChanged(it.indexOf(record))
+                            exitEditMode()
+                        }, 300) // Задержка в миллисекундах
                     }
                 }.setNegativeButton("Отменить") { _, _ ->
-                }.show()
-        }
+                }.create()
 
+            // Показать диалог
+            dialog.show()
+        }
     }
 
     private val listener = object : OnItemClickListener {
         override fun onShareClickListener(position: Int) {
             viewModel.records.observe(viewLifecycleOwner) { records ->
                 val record = records[position]
-
-                // Создайте Uri из строки пути к файлу
-                val fileUri = Uri.parse(record.filepath)
-
+                val context = requireContext()
+                val file = File(record.filepath)
+                val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
                 val shareIntent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_STREAM, fileUri)
                     putExtra(Intent.EXTRA_TITLE, "Поделиться аудиофайлом")
-                    type = "audio/wav"
+                    type = "audio/mp3"
                 }
-
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 startActivity(Intent.createChooser(shareIntent, "Поделиться через"))
             }
         }
-
 
         override fun onItemLongClickListener(position: Int) {
             val actionBars = (requireActivity() as AppCompatActivity).supportActionBar
             Toast.makeText(requireContext(), "Долгое нажатие", Toast.LENGTH_SHORT).show()
             adapterAudioRecords.setEditMode(true)
-            viewModel.records.observe(viewLifecycleOwner) {
-                it[position].isChecked = !it[position].isChecked
+//            viewModel.records.observe(viewLifecycleOwner) {
+//                it[position].isChecked = !it[position].isChecked
+//            }
+            val recordToDelete = viewModel.records.value?.get(position)
+            if (recordToDelete != null) {
+                recordToDelete.isChecked = !recordToDelete.isChecked
             }
             adapterAudioRecords.notifyItemChanged(position)
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -240,34 +272,39 @@ class CardAudioFragment : Fragment() {
         }
 
         override fun onItemClickListener(position: Int) {
-            viewModel.records.observe(viewLifecycleOwner) {
-                val audioRecord = it[position]
-                if (adapterAudioRecords.isEditMode()) {
-                    audioRecord.isChecked = !audioRecord.isChecked
-                    adapterAudioRecords.notifyItemChanged(position)
+            viewModel.records.observe(viewLifecycleOwner) { records ->
+                val audioRecord = records.getOrNull(position)
 
-                    when (it.count { it.isChecked }) {
-                        0 -> {
-                            switchDeleteMode(false)
-                            switchEditMode(false)
+                if (audioRecord != null) {
+                    if (adapterAudioRecords.isEditMode()) {
+                        audioRecord.isChecked = !audioRecord.isChecked
+                        adapterAudioRecords.notifyItemChanged(position)
+
+                        when (records.count { it.isChecked }) {
+                            0 -> {
+                                switchDeleteMode(false)
+                                switchEditMode(false)
+                            }
+
+                            1 -> {
+                                switchDeleteMode(true)
+                                switchEditMode(true)
+                            }
+
+                            else -> {
+                                switchDeleteMode(true)
+                                switchEditMode(false)
+                            }
                         }
-
-                        1 -> {
-                            switchDeleteMode(true)
-                            switchEditMode(true)
-                        }
-
-                        else -> {
-                            switchDeleteMode(true)
-                            switchEditMode(false)
+                    } else {
+                        if (!isNavigationBlocked) {
+                            val action =
+                                CardAudioFragmentDirections.actionCardAudioFragmentToAudioPlayerFragment(
+                                    audioRecord.filename, audioRecord.filepath
+                                )
+                            findNavController().navigate(action)
                         }
                     }
-                } else {
-                    val action =
-                        CardAudioFragmentDirections.actionCardAudioFragmentToAudioPlayerFragment(
-                            audioRecord.filename, audioRecord.filepath
-                        )
-                    findNavController().navigate(action)
                 }
             }
         }

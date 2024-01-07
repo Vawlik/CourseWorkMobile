@@ -170,9 +170,4 @@ class AudioPlayerFragment : Fragment() {
         return String.format("%02d:%02d:%02d", hour, min, sec)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
 }
