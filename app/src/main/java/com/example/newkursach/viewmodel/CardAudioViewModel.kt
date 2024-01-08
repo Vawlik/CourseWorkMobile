@@ -38,7 +38,6 @@ class CardAudioViewModel(private val audioDAO: AudioRecordDao) : ViewModel() {
                     record.filepath,
                     record.timestamp,
                     record.duration,
-                    record.wavesPath,
                     record.latitude,
                     record.longitude
                 )

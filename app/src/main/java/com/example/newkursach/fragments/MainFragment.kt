@@ -233,20 +233,11 @@ class MainFragment : Fragment(), OnTimeListener {
             ).show()
             val filePath = "$dirPath$fileName.mp3"
             val timestamp = Date().time
-            val wavesPath = "$dirPath$fileName"
 
-            try {
-                val fos = FileOutputStream(wavesPath)
-                val out = ObjectOutputStream(fos)
-                out.writeObject(wave)
-                fos.close()
-                out.close()
-            } catch (_: IOException) {
 
-            }
             viewModel.insertAudio(
                 AudioRecord(
-                    null, fileName, filePath, timestamp, duration, wavesPath, latitude, longitude
+                    null, fileName, filePath, timestamp, duration,  latitude, longitude
                 )
             )
         }

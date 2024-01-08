@@ -11,7 +11,6 @@ data class AudioRecord(
     val filepath: String,
     val timestamp: Long,
     val duration: String,
-    val wavesPath: String,
     val latitude: Double?,
     val longitude: Double?
 
