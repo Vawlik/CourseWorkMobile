@@ -168,10 +168,14 @@ class MainFragment : Fragment(), OnTimeListener {
         val date: String = simpleDateFormat.format(Date())
         filename = "audio_record_$date"
         recorder.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile("$dirPath$filename.mp3")
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            recorder.setAudioSamplingRate(44100);
+            recorder.setAudioChannels(1);
+            recorder.setAudioEncodingBitRate(192000);
+            recorder.setOutputFile("$dirPath$filename.mp3");
+
             try {
                 prepare()
             } catch (_: IOException) {
